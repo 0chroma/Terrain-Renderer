@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = -g #-Wall -g -Wl,-rpath,'./lib' #'${ORIGIN}/lib'
 PROG = renderer
 
-SRCS = main.cpp Image.cpp QuadTree.cpp QuadTreeNode.cpp
+SRCS = main.cpp Image.cpp QuadTree.cpp QuadTreeNode.cpp CameraManager.cpp
 
 ifeq ($(shell uname),Darwin)
 	LIBS = -framework OpenGL -framework GLUT -framework GLU -framework png

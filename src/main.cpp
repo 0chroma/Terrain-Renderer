@@ -1,28 +1,124 @@
-#include "Image.h"
-#include "QuadTree.h"
-
+#include <GL/glut.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <stdio.h>
-#include <vector>
+
+#include "CameraManager.h"
+
+float window_width=600;
+float window_height=600;
+CameraManager* cm;
+
+void init()
+{
+	glViewport(0, 0, window_width, window_height);
+/*
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(-1, 1, -1, 1, 1.5, 20);
+    glMatrixMode(GL_MODELVIEW);*/
+}
+
+void display_func()
+{
+	//printf("Display()\n");
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    
+    cm->applyPosition();
+    
+	//specify the color to clear the color buffer
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_LIGHTING);
+    glShadeModel(GL_FLAT);
+    glEnable(GL_LIGHT0);
+
+    
+    GLfloat emissionLight0[] = {0.2f, 0.0f, 0.0f, 1.0f};
+    GLfloat ambientLight0[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    GLfloat diffuseLight0[] = { 0.8f, 0.8f, 0.8, 1.0f };
+    GLfloat specularLight0[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+    GLfloat position0[] = { -1.5f, 1.0f, 4.0f, 1.0f };
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight0);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight0);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight0);
+    glLightfv(GL_LIGHT0, GL_EMISSION, emissionLight0);
+    glLightfv(GL_LIGHT0, GL_POSITION, position0);
+
+
+	glColor3f(0.5f, 0.5f, 0.5f);
+
+    glEnable(GL_DEPTH_TEST);
+
+    //Test code
+    //
+    glutSolidCube(1.0f);
+
+	glFinish();
+}
+
+void timer_func(int){
+    glutTimerFunc(33, timer_func, 0);
+
+    display_func();
+    cm->inputTimer();
+
+    glutPostRedisplay();
+}
+
+void mouse_func(int but, int state, int x, int y){
+}
+
+void mouse_move_func(int x, int y){
+}
+
+void key_func(unsigned char key, int x, int y){
+    cm->onKey(key, CameraManager::KEY_DOWN);
+}
+
+void key_up_func(unsigned char key, int x, int y){
+    cm->onKey(key, CameraManager::KEY_UP);
+}
+
+void reshape_func(int width, int height)
+{
+	printf("Reshape()\n");
+	window_width=width;
+	window_height=height;
+
+	glViewport(0, 0, window_width, window_height);
+	glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+
+    gluPerspective(60, (GLfloat)width / (GLfloat)height, 1.0, 100.0);
+    glMatrixMode(GL_MODELVIEW);
+}
 
 int main(int argc, char **argv)
 {
-    Image *img = new Image("./data/black.png");
+    
+    //initiate camera manager
+    cm = new CameraManager();
 
-    std::vector<int> data = img->get_rgba(0, 0);
 
-    printf("rgba: %d/%d/%d/%d\n", data.at(0), data.at(1), data.at(2), data.at(3));
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+	glutInitWindowSize(window_width, window_height);
+	glutCreateWindow("Renderer");
 
-    QuadTree *tree = new QuadTree();
-    tree->initialize(img);
+	init();
 
-    printf("Root node heightmap: \n");
-    tree->root->printHeightmap();
-    printf("top leftmost leaf: \n");
-    QuadTreeNode *cursor = tree->root;
-    while(cursor->tlNode){
-        cursor = cursor->tlNode;
-    }
-    cursor->printHeightmap();
+    glutDisplayFunc(display_func);
+    glutTimerFunc(100, timer_func, 0);    
+	glutReshapeFunc(reshape_func);
+    glutMouseFunc(mouse_func);
+    glutMotionFunc(mouse_move_func);
+    glutKeyboardFunc(key_func);
+    glutKeyboardUpFunc(key_up_func);
+    glutMainLoop();
 
 	return 0;
 }
