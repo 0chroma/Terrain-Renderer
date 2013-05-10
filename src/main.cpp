@@ -60,7 +60,7 @@ void display_func()
 }
 
 void timer_func(int){
-    glutTimerFunc(33, timer_func, 0);
+    glutTimerFunc(10, timer_func, 0);
 
     display_func();
     cm->inputTimer();
@@ -69,17 +69,19 @@ void timer_func(int){
 }
 
 void mouse_func(int but, int state, int x, int y){
+    cm->onMouseButton(but, state, x, y);
 }
 
 void mouse_move_func(int x, int y){
+    cm->onMouseMove(x, y);
 }
 
 void key_func(unsigned char key, int x, int y){
-    cm->onKey(key, CameraManager::KEY_DOWN);
+    cm->onKey(key, CameraManager::STATE_DOWN);
 }
 
 void key_up_func(unsigned char key, int x, int y){
-    cm->onKey(key, CameraManager::KEY_UP);
+    cm->onKey(key, CameraManager::STATE_UP);
 }
 
 void reshape_func(int width, int height)
@@ -87,6 +89,9 @@ void reshape_func(int width, int height)
 	printf("Reshape()\n");
 	window_width=width;
 	window_height=height;
+
+    cm->window_width = width;
+    cm->window_height = height;
 
 	glViewport(0, 0, window_width, window_height);
 	glMatrixMode(GL_PROJECTION);
@@ -101,7 +106,7 @@ int main(int argc, char **argv)
 {
     
     //initiate camera manager
-    cm = new CameraManager();
+    cm = new CameraManager(window_width, window_height);
 
 
 	glutInit(&argc, argv);
