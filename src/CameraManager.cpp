@@ -51,7 +51,7 @@ void CameraManager::rotate(float y, float p){
     yaw += y;
     pitch += p;
 
-    printf("yaw: %f, pitch: %f\n", yaw, pitch);
+    //printf("yaw: %f, pitch: %f\n", yaw, pitch);
 
     if(pitch > PI/2.1)
         pitch = PI/2.1;
@@ -117,7 +117,7 @@ void CameraManager::onMouseMove(int x, int y){
 }
 
 void CameraManager::onMouseButton(int button, int state, int x, int y){
-    printf("Button! %i, %i\n", button, state);
+    //printf("Button! %i, %i\n", button, state);
 
     if(button == 0 && state == GLUT_DOWN){
         //reset mouse pos
