@@ -1,6 +1,7 @@
 #include "TerrainRenderer.h"
 
 #include <math.h>
+#include <algorithm>
 #include <GL/glut.h>
 
 TerrainRenderer::TerrainRenderer(CameraManager *cm, QuadTree *qt){
@@ -137,10 +138,7 @@ void TerrainRenderer::drawHeightmap(GLdouble offsetX, GLdouble offsetY, GLdouble
     glBegin(GL_TRIANGLES);
 
     GLdouble vertexSpacing;
-    if(node->isRoot())
-        vertexSpacing = size / (HEIGHTMAP_SIZE-1);
-    else
-        vertexSpacing = size / (HEIGHTMAP_SIZE);
+    vertexSpacing = size / (HEIGHTMAP_SIZE-1);
 
     for(int i=0; i<(HEIGHTMAP_SIZE-1); i++){
         for(int j=0; j<(HEIGHTMAP_SIZE-1); j++){
@@ -162,111 +160,73 @@ void TerrainRenderer::drawHeightmap(GLdouble offsetX, GLdouble offsetY, GLdouble
         }
     }
 
-    //unless we're rendering the root, we need to take into account that we need an extra row/column of verticies to join
-    //the four heightmaps together
-    if(!node->isRoot()){
-
-    glPushMatrix();
-    glTranslated(-vertexSpacing, 0.0, -vertexSpacing);
-
-        //for nodes that have a neighbor above, draw the bottom-most row from the top neighbor
-        if(node->location == QuadTreeNode::BOTTOM_LEFT || node->location == QuadTreeNode::BOTTOM_RIGHT){
-            for(int i=0; i<(HEIGHTMAP_SIZE-1); i++){
-                int h1, h2, h3, h4;
-                if(node->location == QuadTreeNode::BOTTOM_LEFT){
-                    h1 = node->parent->tlNode->heightmap[i][HEIGHTMAP_SIZE-1];
-                    h2 = node->parent->tlNode->heightmap[i+1][HEIGHTMAP_SIZE-1];
-                }else{
-                    h1 = node->parent->trNode->heightmap[i][HEIGHTMAP_SIZE-1];
-                    h2 = node->parent->trNode->heightmap[i+1][HEIGHTMAP_SIZE-1];
-                }
-                h3 = node->heightmap[i][0];
-                h4 = node->heightmap[i+1][0];
-
-                GLfloat y1 = transformHeight(h1);
-                GLfloat y2 = transformHeight(h2);
-                GLfloat y3 = transformHeight(h3);
-                GLfloat y4 = transformHeight(h4);
-                GLdouble x = (i+1)*vertexSpacing;
-                GLdouble z = 0;
-                //triangle 1
-                glVertex3d(x, y1, z);
-                glVertex3d(x+vertexSpacing, y2, z);
-                glVertex3d(x+vertexSpacing, y4, z+vertexSpacing);
-                //triangle 2
-                glVertex3d(x, y1, z);
-                glVertex3d(x, y3, z+vertexSpacing);
-                glVertex3d(x+vertexSpacing, y4, z+vertexSpacing);
-                
-            }
-
-        }
-        //for nodes that have a neighbor to the right, draw the leftmost row from the right neighbor
-        if(node->location == QuadTreeNode::BOTTOM_LEFT || node->location == QuadTreeNode::TOP_LEFT){
-            for(int i=0; i<(HEIGHTMAP_SIZE-1); i++){
-                int h1, h2, h3, h4;
-                if(node->location == QuadTreeNode::BOTTOM_LEFT){
-                    h2 = node->parent->brNode->heightmap[0][i];
-                    h4 = node->parent->brNode->heightmap[0][i+1];
-                }else{
-                    h2 = node->parent->trNode->heightmap[0][i];
-                    h4 = node->parent->trNode->heightmap[0][i+1];
-                }
-                h1 = node->heightmap[HEIGHTMAP_SIZE-1][i];
-                h3 = node->heightmap[HEIGHTMAP_SIZE-1][i+1];
-
-                GLfloat y1 = transformHeight(h1);
-                GLfloat y2 = transformHeight(h2);
-                GLfloat y3 = transformHeight(h3);
-                GLfloat y4 = transformHeight(h4);
-
-                GLdouble x = (HEIGHTMAP_SIZE)*vertexSpacing;
-                GLdouble z = (i+1)*vertexSpacing; //(HEIGHTMAP_SIZE-1)*vertexSpacing;
-                //triangle 1
-                glVertex3d(x, y1, z);
-                glVertex3d(x+vertexSpacing, y2, z);
-                glVertex3d(x+vertexSpacing, y4, z+vertexSpacing);
-                //triangle 2
-                glVertex3d(x, y1, z);
-                glVertex3d(x, y3, z+vertexSpacing);
-                glVertex3d(x+vertexSpacing, y4, z+vertexSpacing);
-                
-            }
-
-        }
-        //for the bottom left node, create a central quad that joins the three other neighbors to us
-        if(node->location == QuadTreeNode::BOTTOM_LEFT){
-            GLdouble h1 = transformHeight(node->parent->tlNode->heightmap[HEIGHTMAP_SIZE-1][HEIGHTMAP_SIZE-1]);
-            GLdouble h2 = transformHeight(node->parent->trNode->heightmap[0][HEIGHTMAP_SIZE-1]);
-            GLdouble h3 = transformHeight(node->heightmap[HEIGHTMAP_SIZE-1][0]);
-            GLdouble h4 = transformHeight(node->parent->brNode->heightmap[0][0]);
-            GLdouble x = (HEIGHTMAP_SIZE)*vertexSpacing;
-            GLdouble z = 0; //(HEIGHTMAP_SIZE-1)*vertexSpacing;
-
-            //triangle 1
-            glVertex3d(x, h1, z);
-            glVertex3d(x+vertexSpacing, h2, z);
-            glVertex3d(x+vertexSpacing, h4, z+vertexSpacing);
-            //triangle 2
-            glVertex3d(x, h1, z);
-            glVertex3d(x, h3, z+vertexSpacing);
-            glVertex3d(x+vertexSpacing, h4, z+vertexSpacing);
-
-        }
-        glPopMatrix();
-    }
     glEnd();
 
     glPopMatrix();
 }
 
+void TerrainRenderer::drawNode(GLdouble offsetX, GLdouble offsetY, GLdouble size, QuadTreeNode *node){
+    size = size/2;
+    for(int i=0; i<2; i++){
+        for(int j=0; j<2; j++){
+            QuadTreeNode *child;
+            if(i==0 && j==0) child = node->tlNode;
+            if(i==1 && j==0) child = node->trNode;
+            if(i==0 && j==1) child = node->blNode;
+            if(i==1 && j==1) child = node->brNode;
+            GLfloat tile_x = size*i+offsetX;
+            GLfloat tile_y = size*i+offsetY;
+            
+            GLfloat d = getTileDistance(tile_x, tile_y, transformHeight(child->min), transformHeight(child->max), size);
+
+            if(tile_x == 0.0 && tile_y == 0.0 && size == 0.5)
+                printf("Distance from %i, %i: %f\n", i, j, d);
+            if(d < size*2 && !child->isLeaf()){
+                drawNode(size*i+offsetX, size*j+offsetY, size, child);
+            }else{
+                drawHeightmap(size*i+offsetX, size*j+offsetY, size, child);
+            }
+        }
+    }
+}
+
+float TerrainRenderer::getTileDistance(float tile_x, float tile_y, float min, float max, float size){
+    float cam_x, cam_y, cam_z;
+    cameraManager->getPos(&cam_x, &cam_y, &cam_z);
+            
+    /*GLfloat d1 = sqrt((cam_x-tile_x)*(cam_x-tile_x)+(cam_y-tile_y)*(cam_y-tile_y) + (cam_z*cam_z));
+    tile_x += size;
+    GLfloat d2 = sqrt((cam_x-tile_x)*(cam_x-tile_x)+(cam_y-tile_y)*(cam_y-tile_y) + (cam_z*cam_z));
+    tile_x -= size; tile_y += size;
+    GLfloat d3 = sqrt((cam_x-tile_x)*(cam_x-tile_x)+(cam_y-tile_y)*(cam_y-tile_y) + (cam_z*cam_z));
+    tile_x += size;
+    GLfloat d4 = sqrt((cam_x-tile_x)*(cam_x-tile_x)+(cam_y-tile_y)*(cam_y-tile_y) + (cam_z*cam_z));
+
+    using namespace std;
+    return min(min(d1, d2), min(d3, d4));
+    */
+
+    //get the center of the tile
+    tile_x += size/2;
+    tile_y += size/2;
+    float tile_z = (min+max)/2;
+
+    return sqrt((cam_x-tile_x)*(cam_x-tile_x)+(cam_y-tile_y)*(cam_y-tile_y) + ((cam_z-tile_z)*(cam_z-tile_z)));
+ 
+}
+
 void TerrainRenderer::render(){
     updateMatricies();
 
-    //Test code
     float cam_x, cam_y, cam_z;
     cameraManager->getPos(&cam_x, &cam_y, &cam_z);
 
+
+
+
+
+
+    //Test code
     
     /*QuadTreeNode *cursor = quadTree->root;
     while(cursor->tlNode){
@@ -275,20 +235,7 @@ void TerrainRenderer::render(){
     drawHeightmap(0.0, 0.0, 1.0, cursor->heightmap);*/
 
     QuadTreeNode *r = quadTree->root;
-    //drawHeightmap(0.0, 0.0, 1.0, r->tlNode);
-    drawHeightmap(0.0, 0.0, 0.5, r->tlNode->tlNode);
-    drawHeightmap(0.0, 0.5, 0.5, r->tlNode->blNode);
-    drawHeightmap(0.5, 0.0, 0.5, r->tlNode->trNode);
-    drawHeightmap(0.5, 0.5, 0.5, r->tlNode->brNode);
-
-    drawHeightmap(0.0, 1.0, 1.0, r->blNode);
-    drawHeightmap(1.0, 0.0, 1.0, r->trNode);
-
-    drawHeightmap(1.0, 1.0, 0.5, r->brNode->tlNode);
-    drawHeightmap(1.0, 1.5, 0.5, r->brNode->blNode);
-    drawHeightmap(1.5, 1.0, 0.5, r->brNode->trNode);
-    drawHeightmap(1.5, 1.5, 0.5, r->brNode->brNode);
-
+    drawNode(0.0, 0.0, 1.0, r);
 
     /*
     printf("Camera: (%f, %f, %f)\n", cam_x, cam_y, cam_z);

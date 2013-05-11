@@ -8,6 +8,8 @@ QuadTreeNode::QuadTreeNode(){
     blNode = 0;
     brNode = 0;
     parent = 0;
+    min = 9000;
+    max = 0;
 }
 
 bool QuadTreeNode::isLeaf(){
@@ -35,6 +37,8 @@ void QuadTreeNode::generateMatrixFromChildren(){
             for(x=0; x<HEIGHTMAP_SIZE; x+=2){
                 for(y=0; y<HEIGHTMAP_SIZE; y+=2){
                     heightmap[(i*(HEIGHTMAP_SIZE/2))+(x/2)][(j*(HEIGHTMAP_SIZE/2))+(y/2)] = child->heightmap[x][y];
+                    if(child->heightmap[x][y] > max) max = child->heightmap[x][y];
+                    if(child->heightmap[x][y] < min) min = child->heightmap[x][y];
                 }
             }
         }

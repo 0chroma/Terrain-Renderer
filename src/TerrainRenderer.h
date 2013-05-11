@@ -24,4 +24,6 @@ class TerrainRenderer{
         bool isVisible(double x, double y, double z, double size, double height);
         GLdouble transformHeight(int h);
         void drawHeightmap(GLdouble offsetX, GLdouble offsetY, GLdouble size, QuadTreeNode *node);
+        void drawNode(GLdouble offsetX, GLdouble offsetY, GLdouble size, QuadTreeNode *node);
+        float getTileDistance(float tile_x, float tile_y, float min, float max, float size);
 };

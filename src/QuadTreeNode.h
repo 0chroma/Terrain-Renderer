@@ -12,6 +12,8 @@ class QuadTreeNode {
         QuadTreeNode *blNode;
         QuadTreeNode *brNode;
         QuadTreeNode *parent;
+        int max;
+        int min;
 
         int location;
         static const int TOP_LEFT = 0;

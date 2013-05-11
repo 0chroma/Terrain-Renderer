@@ -27,6 +27,8 @@ void QuadTree::initialize(Image *img){
                     vector<int> data = img->get_rgba(x+offsetx, y+offsety);
                     //here we're using the red chanel. But we could use anything really.
                     node->heightmap[x][y] = data.at(0);
+                    if(data.at(0) < node->min) node->min = data.at(0);
+                    if(data.at(0) > node->max) node->max = data.at(0);
                 }
             }
 

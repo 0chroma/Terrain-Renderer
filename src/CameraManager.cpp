@@ -79,16 +79,16 @@ void CameraManager::applyPosition(){
 void CameraManager::inputTimer(){
     //if a key is pressed, move the camera by a small increment
     if(up_key == STATE_DOWN){
-        move(0.125);
+        move(0.025);
     }
     if(down_key == STATE_DOWN){
-        move(-0.125);
+        move(-0.025);
     }
     if(left_key == STATE_DOWN){
-        strafe(0.125);
+        strafe(0.025);
     }
     if(right_key == STATE_DOWN){
-        strafe(-0.125);
+        strafe(-0.025);
     }
 
     //mouse processing
