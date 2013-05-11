@@ -14,7 +14,8 @@ class CameraManager {
         void onMouseButton(int button, int state, int x, int y);
         void inputTimer();
 
-        void setPos(int a, int b, int c);
+        void setPos(float a, float b, float c);
+        void getPos(float *rx, float *ry, float *rz);
         void rotate(float y, float p);
         void move(float d);
         void strafe(float d);

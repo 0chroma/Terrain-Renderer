@@ -7,10 +7,15 @@ QuadTreeNode::QuadTreeNode(){
     trNode = 0;
     blNode = 0;
     brNode = 0;
+    parent = 0;
 }
 
 bool QuadTreeNode::isLeaf(){
     return tlNode == 0 && trNode == 0 && blNode == 0 && brNode == 0;
+}
+
+bool QuadTreeNode::isRoot(){
+    return parent == 0;
 }
 
 void QuadTreeNode::generateMatrixFromChildren(){
@@ -19,10 +24,13 @@ void QuadTreeNode::generateMatrixFromChildren(){
     for(i=0; i<2; i++){
         for(j=0; j<2; j++){
             QuadTreeNode *child;
-            if(i==0 && j==0) child = tlNode;
-            if(i==1 && j==0) child = trNode;
-            if(i==0 && j==1) child = blNode;
-            if(i==1 && j==1) child = brNode;
+            if(i==0 && j==0){ child = tlNode; child->location = TOP_LEFT; }
+            if(i==1 && j==0){ child = trNode; child->location = TOP_RIGHT; }
+            if(i==0 && j==1){ child = blNode; child->location = BOTTOM_LEFT; }
+            if(i==1 && j==1){ child = brNode; child->location = BOTTOM_RIGHT; }
+            //while we're iterating, set the parent
+            child->parent = this;
+            //continue...
             child->generateMatrixFromChildren();
             for(x=0; x<HEIGHTMAP_SIZE; x+=2){
                 for(y=0; y<HEIGHTMAP_SIZE; y+=2){

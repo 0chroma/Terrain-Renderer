@@ -20,10 +20,16 @@ CameraManager::~CameraManager(){
 
 }
 
-void CameraManager::setPos(int a, int b, int c){
+void CameraManager::setPos(float a, float b, float c){
     x=a;
     y=b;
     z=c;
+}
+
+void CameraManager::getPos(float *rx, float *ry, float *rz){
+    *rx=x;
+    *ry=y;
+    *rz=z;
 }
 
 void CameraManager::move(float d){

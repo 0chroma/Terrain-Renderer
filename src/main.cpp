@@ -4,10 +4,14 @@
 #include <stdio.h>
 
 #include "CameraManager.h"
+#include "QuadTree.h"
+#include "TerrainRenderer.h"
 
 float window_width=600;
 float window_height=600;
 CameraManager* cm;
+TerrainRenderer* tr;
+QuadTree* qt;
 
 void init()
 {
@@ -26,7 +30,7 @@ void display_func()
     glMatrixMode(GL_MODELVIEW);
     
     cm->applyPosition();
-    
+
 	//specify the color to clear the color buffer
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -52,9 +56,8 @@ void display_func()
 
     glEnable(GL_DEPTH_TEST);
 
-    //Test code
-    //
-    glutSolidCube(1.0f);
+
+    tr->render();
 
 	glFinish();
 }
@@ -98,15 +101,19 @@ void reshape_func(int width, int height)
     glLoadIdentity();
 
 
-    gluPerspective(60, (GLfloat)width / (GLfloat)height, 1.0, 100.0);
+    gluPerspective(60, (GLfloat)width / (GLfloat)height, 0.01, 100.0);
     glMatrixMode(GL_MODELVIEW);
 }
 
 int main(int argc, char **argv)
 {
     
-    //initiate camera manager
+    //initiate our classes
+    Image *img = new Image("./data/black.png");
+    qt = new QuadTree();
+    qt->initialize(img);
     cm = new CameraManager(window_width, window_height);
+    tr = new TerrainRenderer(cm, qt);
 
 
 	glutInit(&argc, argv);
