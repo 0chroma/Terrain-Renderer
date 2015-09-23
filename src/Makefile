@@ -5,7 +5,7 @@ PROG = renderer
 SRCS = main.cpp Image.cpp QuadTree.cpp QuadTreeNode.cpp CameraManager.cpp TerrainRenderer.cpp
 
 ifeq ($(shell uname),Darwin)
-	LIBS = -framework OpenGL -framework GLUT -framework GLU -framework png
+	LIBS = -framework OpenGL -framework GLUT -lpng
 else
     LIBS = -lglut -lGLU -lGL -lpng
 endif

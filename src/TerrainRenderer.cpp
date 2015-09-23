@@ -2,8 +2,12 @@
 
 #include <math.h>
 #include <algorithm>
-#include <GL/glut.h>
 
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 TerrainRenderer::TerrainRenderer(CameraManager *cm, QuadTree *qt){
     cameraManager = cm;
     quadTree = qt;
